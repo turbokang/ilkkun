@@ -2,10 +2,10 @@
 set -e
 
 # ilkkun installer script
-# Usage: curl -fsSL https://raw.githubusercontent.com/user/ilkkun/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash
 # Or with version: curl -fsSL ... | bash -s -- v1.0.0
 
-REPO="user/ilkkun"
+REPO="turbokang/ilkkun"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 VERSION="${1:-latest}"
 
