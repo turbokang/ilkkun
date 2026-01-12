@@ -1,5 +1,56 @@
 # ilkkun
 
+AI CLI Agent Bridge to Redis - Run Claude Code, Gemini CLI, or Codex CLI in headless mode and stream events to Redis.
+
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/user/ilkkun/main/install.sh | bash
+```
+
+Or download a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/user/ilkkun/main/install.sh | bash -s -- v1.0.0
+```
+
+### Manual Installation
+
+Download the binary for your platform from [GitHub Releases](https://github.com/user/ilkkun/releases):
+
+| Platform | Binary |
+|----------|--------|
+| Linux x64 | `ilkkun-linux-x64` |
+| Linux ARM64 | `ilkkun-linux-arm64` |
+| macOS x64 | `ilkkun-darwin-x64` |
+| macOS ARM64 | `ilkkun-darwin-arm64` |
+| Windows x64 | `ilkkun-windows-x64.exe` |
+
+```bash
+# Example for macOS ARM64
+curl -L https://github.com/user/ilkkun/releases/latest/download/ilkkun-darwin-arm64 -o ilkkun
+chmod +x ilkkun
+sudo mv ilkkun /usr/local/bin/
+```
+
+## Quick Start
+
+```bash
+# Run with Claude (outputs to Redis)
+ilkkun -a claude -p "Explain this code"
+
+# Run without Redis (outputs to stdout)
+ilkkun -a claude -p "Hello" --no-redis
+
+# Run with Gemini
+ilkkun -a gemini -p "Write tests" -s my-session-123
+
+# Dry run (preview command without executing)
+ilkkun -a claude -p "Hello" --dry-run
+```
+
+## Development
+
 To install dependencies:
 
 ```bash
@@ -9,7 +60,19 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun run src/index.ts
+```
+
+To test:
+
+```bash
+bun test
+```
+
+To build:
+
+```bash
+bun run build
 ```
 
 -----------------------
