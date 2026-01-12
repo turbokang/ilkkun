@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: bun-linux-x64
+            artifact: ilkkun-linux-x64
+          - os: ubuntu-latest
+            target: bun-linux-arm64
+            artifact: ilkkun-linux-arm64
+          - os: macos-latest
+            target: bun-darwin-x64
+            artifact: ilkkun-darwin-x64
+          - os: macos-latest
+            target: bun-darwin-arm64
+            artifact: ilkkun-darwin-arm64
+          - os: windows-latest
+            target: bun-windows-x64
+            artifact: ilkkun-windows-x64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        continue-on-error: false
+
+      - name: Run tests
+        run: bun test
+        continue-on-error: false
+
+      - name: Build binary
+        run: bun build src/index.ts --compile --target=${{ matrix.target }} --outfile=${{ matrix.artifact }}
+        continue-on-error: false
+
+      - name: Verify binary was created
+        shell: bash
+        run: |
+          if [ ! -f "${{ matrix.artifact }}" ]; then
+            echo "Error: Binary ${{ matrix.artifact }} was not created"
+            exit 1
+          fi
+          ls -lh "${{ matrix.artifact }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+          ls -lh release-assets/
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 $TAG_NAME^ 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            echo "## Changes since $PREV_TAG" > release_notes.md
+            echo "" >> release_notes.md
+            git log $PREV_TAG..$TAG_NAME --pretty=format:"- %s (%h)" >> release_notes.md
+          else
+            echo "## Initial Release" > release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Installation" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "Download the binary for your platform:" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "- **Linux (x64)**: \`ilkkun-linux-x64\`" >> release_notes.md
+          echo "- **Linux (ARM64)**: \`ilkkun-linux-arm64\`" >> release_notes.md
+          echo "- **macOS (Intel)**: \`ilkkun-darwin-x64\`" >> release_notes.md
+          echo "- **macOS (Apple Silicon)**: \`ilkkun-darwin-arm64\`" >> release_notes.md
+          echo "- **Windows (x64)**: \`ilkkun-windows-x64.exe\`" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "Make the binary executable (Linux/macOS):" >> release_notes.md
+          echo "\`\`\`bash" >> release_notes.md
+          echo "chmod +x ilkkun-*" >> release_notes.md
+          echo "\`\`\`" >> release_notes.md
+
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          fail_on_unmatched_files: true
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        run: |
+          echo "## Release Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tag: ${{ steps.release_notes.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          ls -1 release-assets/ | while read file; do
+            size=$(ls -lh release-assets/$file | awk '{print $5}')
+            echo "- \`$file\` ($size)" >> $GITHUB_STEP_SUMMARY
+          done

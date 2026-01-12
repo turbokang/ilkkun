@@ -1,0 +1,48 @@
+{
+  "name": "ilkkun",
+  "version": "0.1.0",
+  "description": "AI CLI Agent Bridge to Redis - runs Claude Code, Gemini CLI, Codex CLI in headless mode",
+  "author": "TurboSJ",
+  "license": "MIT",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ilkkun": "./ilkkun"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/user/ilkkun.git"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "claude",
+    "gemini",
+    "codex",
+    "redis",
+    "streaming",
+    "agent"
+  ],
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "tsc --noEmit",
+    "build": "bun build src/index.ts --compile --outfile=ilkkun",
+    "build:all": "scripts/build.sh"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ioredis": "^5.9.1"
+  }
+}
