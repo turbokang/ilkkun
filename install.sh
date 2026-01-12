@@ -6,7 +6,7 @@ set -e
 # Or with version: curl -fsSL ... | bash -s -- v1.0.0
 
 REPO="turbokang/ilkkun"
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
+INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 VERSION="${1:-latest}"
 
 # Colors
@@ -96,13 +96,14 @@ install() {
 
     chmod +x "$TMP_FILE"
 
-    # Check if we need sudo
-    if [ -w "$INSTALL_DIR" ]; then
-        mv "$TMP_FILE" "${INSTALL_DIR}/ilkkun"
-    else
-        info "Installing to $INSTALL_DIR requires sudo..."
-        sudo mv "$TMP_FILE" "${INSTALL_DIR}/ilkkun"
+    # Create install directory if it doesn't exist
+    if [ ! -d "$INSTALL_DIR" ]; then
+        info "Creating directory: $INSTALL_DIR"
+        mkdir -p "$INSTALL_DIR" || error "Failed to create directory: $INSTALL_DIR"
     fi
+
+    # Move binary to install directory
+    mv "$TMP_FILE" "${INSTALL_DIR}/ilkkun" || error "Failed to install. Try: INSTALL_DIR=/path/to/dir $0"
 
     rm -rf "$TMP_DIR"
 
@@ -116,7 +117,12 @@ verify() {
         ilkkun --version
     else
         warn "ilkkun was installed but is not in PATH"
-        warn "Add $INSTALL_DIR to your PATH or run: ${INSTALL_DIR}/ilkkun"
+        echo ""
+        echo "Add this to your shell profile (~/.bashrc, ~/.zshrc, etc.):"
+        echo ""
+        echo "  export PATH=\"$INSTALL_DIR:\$PATH\""
+        echo ""
+        echo "Then restart your shell or run: source ~/.zshrc"
     fi
 }
 

@@ -25,11 +25,22 @@
 curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash
 ```
 
-Install a specific version:
+Installs to `~/.local/bin` by default (no sudo required).
+
+**Options:**
 
 ```bash
+# Install specific version
 curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash -s -- v1.0.0
+
+# Install to custom directory
+INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash
 ```
+
+> **Note:** If `~/.local/bin` is not in your PATH, add it:
+> ```bash
+> echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+> ```
 
 ### Manual Installation
 

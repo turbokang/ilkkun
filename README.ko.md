@@ -25,11 +25,22 @@
 curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash
 ```
 
-특정 버전 설치:
+기본적으로 `~/.local/bin`에 설치됩니다 (sudo 불필요).
+
+**옵션:**
 
 ```bash
+# 특정 버전 설치
 curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash -s -- v1.0.0
+
+# 다른 디렉토리에 설치
+INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/turbokang/ilkkun/main/install.sh | bash
 ```
+
+> **참고:** `~/.local/bin`이 PATH에 없다면 추가하세요:
+> ```bash
+> echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+> ```
 
 ### 수동 설치
 
